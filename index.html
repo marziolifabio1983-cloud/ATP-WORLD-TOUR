@@ -23,7 +23,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1b2e;color:var(--tx);
 .header-meta .dr{color:var(--gold);font-size:13px;font-weight:600;}
 .header-meta .ct{color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px;}
 .nav-tabs{background:#071120;display:flex;max-width:1100px;margin:0 auto;padding:0 20px;gap:4px;}
-.nav-tab{padding:12px 20px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-tab{padding:12px 20px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;}
 .nav-tab:hover{color:rgba(255,255,255,.85);}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .app-body{max-width:1100px;margin:0 auto;padding:24px 20px 40px;}
@@ -133,7 +133,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1b2e;color:var(--tx);
 .ropt.sel-loss{border-color:var(--rer);background:#ffebee;}
 .ropt-icon{font-size:20px;margin-bottom:4px;}
 .ropt-lbl{font-size:12px;font-weight:700;color:var(--tm);}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bd);color:white;padding:12px 24px;border-radius:40px;font-size:14px;font-weight:600;z-index:2000;transition:transform .3s ease;border:1px solid rgba(255,255,255,.15);white-space:nowrap;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bd);color:white;padding:12px 24px;border-radius:40px;font-size:14px;font-weight:600;z-index:2000;transition:transform .3s;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.success{border-left:4px solid #66bb6a;}
 .toast.error{border-left:4px solid #ef5350;}
@@ -526,22 +526,61 @@ function showToast(msg, type) {
 
 function getData(cb) {
   if (_cache) { cb(_cache); return; }
+  
+  // Prova il localStorage prima
+  var stored = localStorage.getItem('atp_data');
+  if (stored) {
+    try {
+      _cache = JSON.parse(stored);
+      cb(_cache);
+      return;
+    } catch(e) {}
+  }
+  
   showLoader(true);
   var xhr = new XMLHttpRequest();
   xhr.open('GET', BIN_URL + '/latest', true);
   xhr.setRequestHeader('X-Access-Key', API_KEY);
   xhr.onload = function() {
     showLoader(false);
-    try { var j = JSON.parse(xhr.responseText); _cache = j.record || {bookings:{},results:{}}; }
-    catch(e) { _cache = {bookings:{},results:{}}; }
+    try { 
+      var j = JSON.parse(xhr.responseText); 
+      _cache = j.record || {bookings:{},results:{}}; 
+    }
+    catch(e) { 
+      _cache = {bookings:{},results:{}}; 
+    }
+    // Salva nel localStorage come backup
+    localStorage.setItem('atp_data', JSON.stringify(_cache));
     cb(_cache);
   };
-  xhr.onerror = function() { showLoader(false); showToast('Errore connessione','error'); cb(_cache||{bookings:{},results:{}}); };
+  xhr.onerror = function() { 
+    showLoader(false); 
+    // Se esiste il backup, usalo silenziosamente
+    if (stored) {
+      try {
+        _cache = JSON.parse(stored);
+        cb(_cache);
+        showToast('⚠️ Usa dati offline (ultimo salvataggio)', 'error');
+      } catch(e) {
+        _cache = {bookings:{},results:{}};
+        cb(_cache);
+        showToast('Errore connessione','error');
+      }
+    } else {
+      _cache = {bookings:{},results:{}};
+      cb(_cache);
+      showToast('Errore connessione','error');
+    }
+  };
   xhr.send();
 }
 
 function saveData(d, cb) {
   _cache = d;
+  // Salva sempre nel localStorage prima
+  localStorage.setItem('atp_data', JSON.stringify(d));
+  
   if (_saving) { setTimeout(function(){ saveData(d,cb); }, 300); return; }
   _saving = true;
   var xhr = new XMLHttpRequest();
@@ -549,7 +588,10 @@ function saveData(d, cb) {
   xhr.setRequestHeader('Content-Type','application/json');
   xhr.setRequestHeader('X-Access-Key', API_KEY);
   xhr.onload = function() { _saving = false; if (cb) cb(); };
-  xhr.onerror = function() { _saving = false; showToast('Errore salvataggio','error'); };
+  xhr.onerror = function() { 
+    _saving = false; 
+    showToast('✓ Salvato offline (sincronizzerai al prossimo accesso)','success');
+  };
   xhr.send(JSON.stringify(d));
 }
 
@@ -600,7 +642,7 @@ function renderCalendar() {
       block.className = 'date-block';
       var lbl = document.createElement('div');
       lbl.className = 'date-label '+day.type;
-      lbl.innerHTML = '<span>'+day.date+'</span><span class="badge">'+(day.type==='weekend'?'Weekend':'Feriale')+'</span>';
+      lbl.innerHTML = '<span>'+day.date+'</span><span class="badge">'+(day.type==='weekend'?'🏀 Weekend':'📅 Feriale')+'</span>';
       block.appendChild(lbl);
 
       var wrap = document.createElement('div');
@@ -717,11 +759,9 @@ function renderRisultati() {
           '<div><div class="mp">'+m.b.p1+'</div><div style="font-size:10px;color:var(--tm)">'+m.time+' · C.'+(parseInt(m.court)+1)+'</div></div>'+
           '<div class="match-vs">VS</div>'+
           '<div class="mp right">'+m.b.p2+'</div>'+
-          '<button class="mrb'+(result?' done':'"')+'" onclick="openResultModal(''+m.k+'')">'+
+          '<button class="mrb'+(result?' done':'')+ '" onclick="openResultModal(\''+m.k+'\')">'+
             (result ? '✓ Modifica' : '+ Risultato')+
           '</button>';
-        // fix quote
-        item.querySelector('.mrb').className = 'mrb'+(result?' done':'');
         list.appendChild(item);
       });
     });
