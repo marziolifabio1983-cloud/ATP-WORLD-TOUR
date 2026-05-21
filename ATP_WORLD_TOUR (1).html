@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATP World Tour</title>
+<style>
+:root {
+  --bd: #0a2342; --bm: #1a3a6b; --ba: #1565c0; --bl: #1e88e5; --bp: #e3f2fd;
+  --gold: #f9a825; --silver: #90a4ae; --bronze: #a1887f;
+  --wh: #ffffff; --gl: #f5f7fa; --gm: #e0e7ef; --gd: #607d8b;
+  --tx: #0a2342; --tm: #546e7a; --gok: #2e7d32; --rer: #c62828;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1b2e;color:var(--tx);min-height:100vh;}
+.app-header{background:linear-gradient(135deg,#0a1628 0%,#0d2347 50%,#0a1628 100%);border-bottom:2px solid var(--gold);}
+.header-inner{max-width:1100px;margin:0 auto;padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.header-logo{display:flex;align-items:center;gap:14px;}
+.ball-icon{width:44px;height:44px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.header-title h1{color:white;font-size:22px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.header-title p{color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.header-meta{text-align:right;}
+.header-meta .dr{color:var(--gold);font-size:13px;font-weight:600;}
+.header-meta .ct{color:rgba(255,255,255,0.6);font-size:11px;margin-top:3px;}
+.nav-tabs{background:#071120;display:flex;max-width:1100px;margin:0 auto;padding:0 20px;gap:4px;}
+.nav-tab{padding:12px 20px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-tab:hover{color:rgba(255,255,255,.85);}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.app-body{max-width:1100px;margin:0 auto;padding:24px 20px 40px;}
+.section{display:none;}.section.active{display:block;}
+.card{background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.18);margin-bottom:20px;}
+.card-header{background:var(--bm);color:white;padding:12px 18px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.cal-controls{background:white;border-radius:10px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;box-shadow:0 2px 12px rgba(0,0,0,.18);}
+.cal-controls label{display:block;font-size:12px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.cal-controls select{border:1.5px solid var(--gm);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--tx);outline:none;background:white;min-width:160px;}
+.cal-controls select:focus{border-color:var(--bl);}
+.cal-stat{font-size:12px;color:var(--tm);margin-left:auto;align-self:center;}
+.date-block{margin-bottom:10px;}
+.date-label{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:white;border-radius:7px 7px 0 0;}
+.date-label.weekend{background:var(--ba);}
+.date-label.weekday{background:#1a3a6b;}
+.date-label .badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;letter-spacing:.5px;margin-left:auto;}
+.date-label.weekend .badge{background:var(--gold);color:#0a1628;}
+.date-label.weekday .badge{background:rgba(255,255,255,.2);color:white;}
+.slots-wrap{background:white;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid var(--gm);border-top:none;}
+.slot-row{display:grid;grid-template-columns:70px repeat(3,1fr);border-bottom:1px solid var(--gm);min-height:42px;}
+.slot-row:last-child{border-bottom:none;}
+.slot-row:hover{background:#fafbff;}
+.slot-time{background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tm);border-right:1px solid var(--gm);}
+.th-row{display:grid;grid-template-columns:70px repeat(3,1fr);background:#f0f4fa;}
+.th-cell{padding:6px 8px;font-size:10px;font-weight:700;color:var(--bm);text-transform:uppercase;letter-spacing:.5px;border-right:1px solid var(--gm);border-bottom:1px solid var(--gm);}
+.th-cell:last-child{border-right:none;}
+.slot-court{padding:6px 8px;border-right:1px solid var(--gm);display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .15s;min-width:0;}
+.slot-court:last-child{border-right:none;}
+.slot-court.booked{background:#e8f5e9;}
+.slot-court.booked:hover{background:#dcedc8;}
+.slot-court:not(.booked):hover{background:#e3f2fd;}
+.court-lbl{font-size:9px;font-weight:700;color:var(--ba);text-transform:uppercase;letter-spacing:.5px;}
+.match-disp{display:flex;align-items:center;gap:4px;font-size:11px;}
+.ppill{background:var(--bp);color:var(--ba);border-radius:4px;padding:2px 6px;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;}
+.vs-dot{color:var(--tm);font-size:9px;font-weight:700;flex-shrink:0;}
+.empty-slot{color:var(--gd);font-size:11px;opacity:.5;}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(7,17,32,.75);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-backdrop.open{display:flex;}
+.modal{background:white;border-radius:14px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.modal-head{background:var(--bm);color:white;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{font-size:15px;font-weight:700;}
+.modal-head .si{font-size:12px;color:var(--gold);margin-top:2px;}
+.modal-close{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;padding:0;}
+.modal-body{padding:20px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:12px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.fg select{width:100%;border:1.5px solid var(--gm);border-radius:7px;padding:9px 12px;font-size:14px;color:var(--tx);outline:none;background:white;cursor:pointer;}
+.fg select:focus{border-color:var(--bl);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-footer{padding:0 20px 20px;display:flex;gap:10px;}
+.btn{flex:1;padding:10px 16px;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--ba);color:white;}.btn-primary:hover{background:var(--bd);}
+.btn-danger{background:#ffebee;color:var(--rer);}.btn-danger:hover{background:#ffcdd2;}
+.btn-secondary{background:var(--gl);color:var(--tm);}.btn-secondary:hover{background:var(--gm);}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.stat-pill{background:white;border-radius:8px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.15);text-align:center;}
+.stat-pill .num{font-size:24px;font-weight:800;color:var(--ba);}
+.stat-pill .lbl{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;font-weight:600;}
+.match-dg{padding:8px 16px;background:var(--bm);color:white;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+.match-item{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--gm);transition:background .15s;}
+.match-item:last-child{border-bottom:none;}
+.match-item:hover{background:var(--gl);}
+.mp{font-size:14px;font-weight:600;}
+.mp.right{text-align:right;}
+.match-vs{font-size:11px;font-weight:700;color:var(--tm);text-transform:uppercase;}
+.mrb{background:var(--bp);color:var(--ba);border:1.5px solid var(--bm);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.mrb:hover{background:var(--ba);color:white;}
+.mrb.done{background:#e8f5e9;color:var(--gok);border-color:var(--gok);}
+.mrb.done:hover{background:var(--gok);color:white;}
+.no-matches{padding:40px 20px;text-align:center;color:var(--tm);font-size:14px;}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;}
+.pc{background:white;border-radius:10px;text-align:center;padding:20px 12px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-top:4px solid transparent;}
+.pc.first{border-top-color:var(--gold);}
+.pc.second{border-top-color:var(--silver);}
+.pc.third{border-top-color:var(--bronze);}
+.pm{font-size:28px;margin-bottom:6px;}
+.pn{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:2px;}
+.pp{font-size:22px;font-weight:800;color:var(--ba);}
+.pp span{font-size:12px;font-weight:500;color:var(--tm);}
+.pst{font-size:11px;color:var(--tm);margin-top:6px;}
+.pe{color:var(--tm);font-size:14px;}
+.rtable{width:100%;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.18);}
+.rtable table{width:100%;border-collapse:collapse;}
+.rtable th{background:var(--bm);color:white;padding:10px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:left;}
+.rtable th:not(:first-child){text-align:center;}
+.rtable td{padding:11px 12px;border-bottom:1px solid var(--gm);font-size:13px;}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:#f7faff;}
+.rtable td:not(:first-child):not(:nth-child(2)){text-align:center;}
+.rpos{font-weight:800;color:var(--ba);font-size:14px;}
+.rname{font-weight:700;}
+.rpts{font-weight:800;color:var(--ba);font-size:15px;}
+.fbar{display:flex;gap:3px;justify-content:center;}
+.fdot{width:10px;height:10px;border-radius:50%;}
+.fdot.win{background:var(--gok);}.fdot.loss{background:var(--rer);}.fdot.draw{background:var(--gold);}.fdot.empty{background:var(--gm);}
+.bth td{opacity:.45;}
+.pbw{width:70px;background:var(--gm);border-radius:20px;height:6px;margin:0 auto;}
+.pbf{height:6px;border-radius:20px;background:var(--bl);}
+.rmp{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bp);border-bottom:1px solid var(--gm);}
+.rmpn{font-size:15px;font-weight:700;color:var(--bd);}
+.rmpvs{font-size:12px;font-weight:700;color:var(--tm);text-transform:uppercase;}
+.ropts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 20px;}
+.ropt{border:2px solid var(--gm);border-radius:8px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .15s;}
+.ropt:hover{border-color:var(--bl);background:var(--bp);}
+.ropt.sel-win{border-color:var(--gok);background:#e8f5e9;}
+.ropt.sel-draw{border-color:var(--gold);background:#fff8e1;}
+.ropt.sel-loss{border-color:var(--rer);background:#ffebee;}
+.ropt-icon{font-size:20px;margin-bottom:4px;}
+.ropt-lbl{font-size:12px;font-weight:700;color:var(--tm);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bd);color:white;padding:12px 24px;border-radius:40px;font-size:14px;font-weight:600;z-index:2000;transition:transform .3s ease;border:1px solid rgba(255,255,255,.15);white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{border-left:4px solid #66bb6a;}
+.toast.error{border-left:4px solid #ef5350;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+  .header-inner{flex-direction:column;align-items:flex-start;}
+  .header-meta{text-align:left;}
+  .podium{grid-template-columns:1fr;}
+  .slot-row{grid-template-columns:55px repeat(3,1fr);}
+  .ppill{max-width:55px;}
+  .nav-tab{padding:10px 12px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <div class="ball-icon">🎾</div>
+      <div class="header-title">
+        <h1>ATP World Tour</h1>
+        <p>Torneo Amatoriale</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="dr">24 Mag — 31 Dic 2025</div>
+      <div class="ct">3 Campi · 6 Giocatori</div>
+    </div>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;">
+    <nav class="nav-tabs">
+      <div class="nav-tab active" onclick="showTab('calendario',this)">📅 Calendario</div>
+      <div class="nav-tab" onclick="showTab('risultati',this)">📝 Risultati</div>
+      <div class="nav-tab" onclick="showTab('classifica',this)">🏆 Classifica</div>
+    </nav>
+  </div>
+</header>
+
+<main class="app-body">
+
+  <section id="tab-calendario" class="section active">
+    <div class="cal-controls">
+      <div>
+        <label>Data</label>
+        <select id="filterDate" onchange="renderCalendar()">
+          <option value="">— Scegli data —</option>
+          <option value="__all__">Tutte le date</option>
+        </select>
+      </div>
+      <div>
+        <label>Giocatore</label>
+        <select id="filterPlayer" onchange="renderCalendar()">
+          <option value="">Tutti i giocatori</option>
+        </select>
+      </div>
+      <div class="cal-stat" id="cal-stat"></div>
+    </div>
+    <div id="cal-container"></div>
+  </section>
+
+  <section id="tab-risultati" class="section">
+    <div class="stats-row" id="ris-stats"></div>
+    <div class="card">
+      <div class="card-header">📋 Partite prenotate</div>
+      <div id="matches-list"></div>
+    </div>
+  </section>
+
+  <section id="tab-classifica" class="section">
+    <div class="podium" id="podium"></div>
+    <div class="rtable">
+      <table>
+        <thead><tr>
+          <th style="width:48px">#</th><th>Giocatore</th><th>Partite</th>
+          <th>V</th><th>P</th><th>S</th><th>% Vit.</th><th>Punti</th><th>Forma</th>
+        </tr></thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL PRENOTAZIONE -->
+<div class="modal-backdrop" id="bk-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Prenota slot</h3><div class="si" id="bk-info"></div></div>
+      <button class="modal-close" onclick="closeModal('bk-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="fg"><label>Giocatore 1</label><select id="bk-p1"></select></div>
+        <div class="fg"><label>Giocatore 2</label><select id="bk-p2"></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="bk-del" onclick="deleteBooking()" style="display:none">🗑 Cancella</button>
+      <button class="btn btn-secondary" onclick="closeModal('bk-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveBooking()">✓ Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RISULTATO -->
+<div class="modal-backdrop" id="rs-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Inserisci risultato</h3><div class="si" id="rs-info"></div></div>
+      <button class="modal-close" onclick="closeModal('rs-modal')">×</button>
+    </div>
+    <div class="rmp">
+      <div class="rmpn" id="rs-p1"></div>
+      <div class="rmpvs">VS</div>
+      <div class="rmpn" id="rs-p2"></div>
+    </div>
+    <div class="ropts">
+      <div class="ropt" id="opt-win" onclick="selRes('win')">
+        <div class="ropt-icon">🏆</div><div class="ropt-lbl" id="opt-win-lbl">Vince P1</div>
+      </div>
+      <div class="ropt" id="opt-draw" onclick="selRes('draw')">
+        <div class="ropt-icon">🤝</div><div class="ropt-lbl">Pareggio</div>
+      </div>
+      <div class="ropt" id="opt-loss" onclick="selRes('loss')">
+        <div class="ropt-icon">🥈</div><div class="ropt-lbl" id="opt-loss-lbl">Vince P2</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="rs-del" onclick="deleteResult()" style="display:none">🗑 Rimuovi</button>
+      <button class="btn btn-secondary" onclick="closeModal('rs-modal')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveResult()">✓ Conferma</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="loader" style="display:none;position:fixed;inset:0;background:rgba(7,17,32,.7);z-index:3000;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#f9a825;border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div style="color:white;font-size:13px;font-weight:600;">Sincronizzazione...</div>
+</div>
+
+<script>
+var BIN_ID = '6a0f5fc66877513b27aedbfc';
+var API_KEY = '$2a$10$u1lmMTRur2ig/KzD.yLNnu29ys4BwIAqru7H1./e2r7qdtiImFNz2';
+var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+var PLAYERS = ['Fabio M.','Fabio G.','Roby','Marco','Andrea','Gianni'];
+
+var SCHEDULE = [
+  {date:"Dom 24 mag",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 25 mag",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 26 mag",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 27 mag",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 28 mag",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 29 mag",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 30 mag",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 31 mag",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 1 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 2 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 3 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 4 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 5 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 6 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 7 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 8 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 9 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 10 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 11 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 12 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 13 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 14 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 15 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 16 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 17 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 18 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 19 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 20 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 21 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 22 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 23 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 24 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 25 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 26 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 27 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 28 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 29 giu",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 30 giu",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 1 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 2 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 3 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 4 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 5 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 6 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 7 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 8 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 9 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 10 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 11 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 12 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 13 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 14 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 15 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 16 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 17 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 18 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 19 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 20 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 21 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 22 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 23 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 24 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 25 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 26 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 27 lug",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 28 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 29 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 30 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 31 lug",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 1 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 2 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 3 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 4 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 5 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 6 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 7 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 8 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 9 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 10 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 11 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 12 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 13 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 14 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 15 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 16 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 17 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 18 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 19 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 20 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 21 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 22 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 23 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 24 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 25 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 26 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 27 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 28 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 29 ago",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 30 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 31 ago",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 1 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 2 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 3 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 4 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 5 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 6 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 7 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 8 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 9 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 10 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 11 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 12 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 13 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 14 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 15 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 16 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 17 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 18 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 19 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 20 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 21 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 22 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 23 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 24 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 25 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 26 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 27 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 28 set",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 29 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 30 set",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 1 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 2 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 3 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 4 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 5 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 6 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 7 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 8 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 9 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 10 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 11 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 12 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 13 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 14 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 15 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 16 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 17 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 18 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 19 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 20 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 21 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 22 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 23 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 24 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 25 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 26 ott",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 27 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 28 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 29 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 30 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 31 ott",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 1 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 2 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 3 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 4 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 5 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 6 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 7 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 8 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 9 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 10 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 11 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 12 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 13 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 14 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 15 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 16 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 17 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 18 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 19 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 20 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 21 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 22 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 23 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 24 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 25 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 26 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 27 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 28 nov",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 29 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 30 nov",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 1 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 2 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 3 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 4 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 5 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 6 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 7 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 8 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 9 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 10 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 11 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 12 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 13 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 14 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 15 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 16 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 17 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 18 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 19 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 20 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 21 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 22 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 23 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 24 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Gio 25 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Ven 26 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Sab 27 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Dom 28 dic",slots:["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],type:"weekend"},
+  {date:"Lun 29 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mar 30 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+  {date:"Mer 31 dic",slots:["19:00","20:00","21:00"],type:"weekday"},
+];
+
+var _cache = null;
+var _curKey = null;
+var _curP1 = null;
+var _curP2 = null;
+var _selRes = null;
+var _saving = false;
+
+function showLoader(v) { document.getElementById('loader').style.display = v ? 'flex' : 'none'; }
+
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+function getData(cb) {
+  if (_cache) { cb(_cache); return; }
+  showLoader(true);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', BIN_URL + '/latest', true);
+  xhr.setRequestHeader('X-Access-Key', API_KEY);
+  xhr.onload = function() {
+    showLoader(false);
+    try { var j = JSON.parse(xhr.responseText); _cache = j.record || {bookings:{},results:{}}; }
+    catch(e) { _cache = {bookings:{},results:{}}; }
+    cb(_cache);
+  };
+  xhr.onerror = function() { showLoader(false); showToast('Errore connessione','error'); cb(_cache||{bookings:{},results:{}}); };
+  xhr.send();
+}
+
+function saveData(d, cb) {
+  _cache = d;
+  if (_saving) { setTimeout(function(){ saveData(d,cb); }, 300); return; }
+  _saving = true;
+  var xhr = new XMLHttpRequest();
+  xhr.open('PUT', BIN_URL, true);
+  xhr.setRequestHeader('Content-Type','application/json');
+  xhr.setRequestHeader('X-Access-Key', API_KEY);
+  xhr.onload = function() { _saving = false; if (cb) cb(); };
+  xhr.onerror = function() { _saving = false; showToast('Errore salvataggio','error'); };
+  xhr.send(JSON.stringify(d));
+}
+
+function slotKey(date,time,court) { return date+'|'+time+'|'+court; }
+
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'risultati') renderRisultati();
+  if (name === 'classifica') renderClassifica();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  _selRes = null;
+}
+
+// CALENDARIO
+function renderCalendar() {
+  var filterDate = document.getElementById('filterDate').value;
+  var filterPlayer = document.getElementById('filterPlayer').value;
+  if (!filterDate && !filterPlayer) {
+    filterDate = SCHEDULE[0].date;
+    document.getElementById('filterDate').value = filterDate;
+  }
+  var showAll = (filterDate === '__all__') || (filterPlayer && !filterDate);
+
+  getData(function(data) {
+    var container = document.getElementById('cal-container');
+    container.innerHTML = '';
+    var total = 0, booked = 0;
+
+    SCHEDULE.forEach(function(day) {
+      if (!showAll && filterDate && day.date !== filterDate) return;
+      if (filterPlayer) {
+        var hasMatch = day.slots.some(function(t) {
+          return [0,1,2].some(function(c) {
+            var b = data.bookings[slotKey(day.date,t,c)];
+            return b && (b.p1===filterPlayer||b.p2===filterPlayer);
+          });
+        });
+        if (!hasMatch) return;
+      }
+
+      var block = document.createElement('div');
+      block.className = 'date-block';
+      var lbl = document.createElement('div');
+      lbl.className = 'date-label '+day.type;
+      lbl.innerHTML = '<span>'+day.date+'</span><span class="badge">'+(day.type==='weekend'?'Weekend':'Feriale')+'</span>';
+      block.appendChild(lbl);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'slots-wrap';
+      var th = document.createElement('div');
+      th.className = 'th-row';
+      th.innerHTML = '<div class="th-cell" style="background:#e8edf5">Ora</div><div class="th-cell">Campo 1</div><div class="th-cell">Campo 2</div><div class="th-cell">Campo 3</div>';
+      wrap.appendChild(th);
+
+      day.slots.forEach(function(time) {
+        total += 3;
+        var row = document.createElement('div');
+        row.className = 'slot-row';
+        var tc = document.createElement('div');
+        tc.className = 'slot-time';
+        tc.textContent = time;
+        row.appendChild(tc);
+        [0,1,2].forEach(function(court) {
+          var k = slotKey(day.date,time,court);
+          var bk = data.bookings[k];
+          if (bk) booked++;
+          var cell = document.createElement('div');
+          cell.className = 'slot-court'+(bk?' booked':'');
+          cell.innerHTML = '<span class="court-lbl">Campo '+(court+1)+'</span>';
+          if (bk) {
+            cell.innerHTML += '<div class="match-disp"><span class="ppill">'+bk.p1+'</span><span class="vs-dot">VS</span><span class="ppill">'+bk.p2+'</span></div>';
+          } else {
+            cell.innerHTML += '<span class="empty-slot">+ prenota</span>';
+          }
+          cell.onclick = (function(d,t,c){ return function(){ openBookingModal(d,t,c); }; })(day.date,time,court);
+          row.appendChild(cell);
+        });
+        wrap.appendChild(row);
+      });
+      block.appendChild(wrap);
+      container.appendChild(block);
+    });
+    document.getElementById('cal-stat').innerHTML = '<strong>'+booked+'</strong> slot prenotati su '+total;
+  });
+}
+
+function openBookingModal(date,time,court) {
+  _curKey = slotKey(date,time,court);
+  getData(function(data) {
+    var bk = data.bookings[_curKey];
+    document.getElementById('bk-info').textContent = date+' · '+time+' · Campo '+(court+1);
+    document.getElementById('bk-p1').value = bk ? bk.p1 : '';
+    document.getElementById('bk-p2').value = bk ? bk.p2 : '';
+    document.getElementById('bk-del').style.display = bk ? 'block' : 'none';
+    document.getElementById('bk-modal').classList.add('open');
+  });
+}
+
+function saveBooking() {
+  var p1 = document.getElementById('bk-p1').value;
+  var p2 = document.getElementById('bk-p2').value;
+  if (!p1||!p2) { showToast('Seleziona entrambi i giocatori','error'); return; }
+  if (p1===p2) { showToast('I giocatori devono essere diversi','error'); return; }
+  getData(function(data) {
+    data.bookings[_curKey] = {p1:p1,p2:p2};
+    saveData(data, function() {
+      closeModal('bk-modal');
+      renderCalendar();
+      showToast('✓ Prenotazione salvata','success');
+    });
+  });
+}
+
+function deleteBooking() {
+  getData(function(data) {
+    delete data.bookings[_curKey];
+    delete data.results[_curKey];
+    saveData(data, function() {
+      closeModal('bk-modal');
+      renderCalendar();
+      showToast('Prenotazione cancellata','success');
+    });
+  });
+}
+
+// RISULTATI
+function renderRisultati() {
+  getData(function(data) {
+    var booked = Object.keys(data.bookings);
+    var played = Object.keys(data.results).length;
+    document.getElementById('ris-stats').innerHTML =
+      '<div class="stat-pill"><div class="num">'+booked.length+'</div><div class="lbl">Partite</div></div>'+
+      '<div class="stat-pill"><div class="num">'+played+'</div><div class="lbl">Giocate</div></div>'+
+      '<div class="stat-pill"><div class="num">'+(booked.length-played)+'</div><div class="lbl">Da giocare</div></div>';
+
+    var list = document.getElementById('matches-list');
+    if (booked.length === 0) {
+      list.innerHTML = '<div class="no-matches">Nessuna partita prenotata ancora.<br>Vai al Calendario per prenotare gli slot.</div>';
+      return;
+    }
+    var byDate = {};
+    booked.forEach(function(k) {
+      var parts = k.split('|');
+      var date = parts[0], time = parts[1], court = parts[2];
+      if (!byDate[date]) byDate[date] = [];
+      byDate[date].push({k:k,b:data.bookings[k],time:time,court:court});
+    });
+    list.innerHTML = '';
+    Object.keys(byDate).sort().forEach(function(date) {
+      var dh = document.createElement('div');
+      dh.className = 'match-dg';
+      dh.textContent = date;
+      list.appendChild(dh);
+      byDate[date].sort(function(a,b){ return a.time.localeCompare(b.time); }).forEach(function(m) {
+        var result = data.results[m.k];
+        var item = document.createElement('div');
+        item.className = 'match-item';
+        item.innerHTML =
+          '<div><div class="mp">'+m.b.p1+'</div><div style="font-size:10px;color:var(--tm)">'+m.time+' · C.'+(parseInt(m.court)+1)+'</div></div>'+
+          '<div class="match-vs">VS</div>'+
+          '<div class="mp right">'+m.b.p2+'</div>'+
+          '<button class="mrb'+(result?' done':'"')+'" onclick="openResultModal(''+m.k+'')">'+
+            (result ? '✓ Modifica' : '+ Risultato')+
+          '</button>';
+        // fix quote
+        item.querySelector('.mrb').className = 'mrb'+(result?' done':'');
+        list.appendChild(item);
+      });
+    });
+  });
+}
+
+function openResultModal(k) {
+  _curKey = k;
+  getData(function(data) {
+    var bk = data.bookings[k];
+    var result = data.results[k];
+    _curP1 = bk.p1; _curP2 = bk.p2;
+    var parts = k.split('|');
+    document.getElementById('rs-info').textContent = parts[0]+' · '+parts[1]+' · Campo '+(parseInt(parts[2])+1);
+    document.getElementById('rs-p1').textContent = bk.p1;
+    document.getElementById('rs-p2').textContent = bk.p2;
+    document.getElementById('opt-win-lbl').textContent = 'Vince '+bk.p1.split(' ')[0];
+    document.getElementById('opt-loss-lbl').textContent = 'Vince '+bk.p2.split(' ')[0];
+    _selRes = result || null;
+    ['win','draw','loss'].forEach(function(r) {
+      document.getElementById('opt-'+r).className = 'ropt'+(result===r?' sel-'+r:'');
+    });
+    document.getElementById('rs-del').style.display = result ? 'block' : 'none';
+    document.getElementById('rs-modal').classList.add('open');
+  });
+}
+
+function selRes(r) {
+  _selRes = r;
+  ['win','draw','loss'].forEach(function(x) {
+    document.getElementById('opt-'+x).className = 'ropt'+(x===r?' sel-'+x:'');
+  });
+}
+
+function saveResult() {
+  if (!_selRes) { showToast('Seleziona un risultato','error'); return; }
+  getData(function(data) {
+    data.results[_curKey] = _selRes;
+    saveData(data, function() {
+      closeModal('rs-modal');
+      renderRisultati();
+      showToast('✓ Risultato salvato','success');
+    });
+  });
+}
+
+function deleteResult() {
+  getData(function(data) {
+    delete data.results[_curKey];
+    saveData(data, function() {
+      closeModal('rs-modal');
+      renderRisultati();
+      showToast('Risultato rimosso','success');
+    });
+  });
+}
+
+// CLASSIFICA
+function renderClassifica() {
+  getData(function(data) {
+    var stats = {};
+    PLAYERS.forEach(function(p) { stats[p] = {p:p,partite:0,vittorie:0,pareggi:0,sconfitte:0,forma:[]}; });
+    Object.keys(data.results).forEach(function(k) {
+      var result = data.results[k];
+      var bk = data.bookings[k];
+      if (!bk||!stats[bk.p1]||!stats[bk.p2]) return;
+      stats[bk.p1].partite++; stats[bk.p2].partite++;
+      if (result==='win') {
+        stats[bk.p1].vittorie++; stats[bk.p2].sconfitte++;
+        stats[bk.p1].forma.push('win'); stats[bk.p2].forma.push('loss');
+      } else if (result==='draw') {
+        stats[bk.p1].pareggi++; stats[bk.p2].pareggi++;
+        stats[bk.p1].forma.push('draw'); stats[bk.p2].forma.push('draw');
+      } else {
+        stats[bk.p1].sconfitte++; stats[bk.p2].vittorie++;
+        stats[bk.p1].forma.push('loss'); stats[bk.p2].forma.push('win');
+      }
+    });
+    var ranked = PLAYERS.map(function(p) {
+      var s = stats[p];
+      return Object.assign({},s,{punti:s.vittorie*3+s.pareggi,pct:s.partite>0?s.vittorie/s.partite:0,qualified:s.partite>=3});
+    }).sort(function(a,b){ return (b.punti-a.punti)||(b.pct-a.pct)||(b.vittorie-a.vittorie); });
+
+    var qualified = ranked.filter(function(r){ return r.qualified; });
+    var medals = ['🥇','🥈','🥉'];
+    var pcls = ['first','second','third'];
+    var podium = document.getElementById('podium');
+    podium.innerHTML = '';
+    [0,1,2].forEach(function(i) {
+      var p = qualified[i];
+      var card = document.createElement('div');
+      card.className = 'pc '+pcls[i];
+      card.innerHTML = p ?
+        '<div class="pm">'+medals[i]+'</div><div class="pn">'+p.p+'</div><div class="pp">'+p.punti+'<span> pt</span></div><div class="pst">'+p.partite+' partite · '+p.vittorie+'V '+p.pareggi+'P '+p.sconfitte+'S</div>' :
+        '<div class="pm">'+medals[i]+'</div><div class="pe">—</div>';
+      podium.appendChild(card);
+    });
+
+    var tbody = document.getElementById('rank-body');
+    tbody.innerHTML = '';
+    ranked.forEach(function(p,i) {
+      var tr = document.createElement('tr');
+      if (!p.qualified) tr.className = 'bth';
+      var forma = p.forma.slice(-5);
+      while(forma.length<5) forma.unshift('empty');
+      var dots = forma.map(function(f){ return '<div class="fdot '+f+'"></div>'; }).join('');
+      var pct = Math.round(p.pct*100);
+      tr.innerHTML =
+        '<td><span class="rpos">'+(p.qualified?(i+1)+'°':'—')+'</span></td>'+
+        '<td><span class="rname">'+p.p+'</span></td>'+
+        '<td>'+p.partite+'</td><td>'+p.vittorie+'</td><td>'+p.pareggi+'</td><td>'+p.sconfitte+'</td>'+
+        '<td><div class="pbw"><div class="pbf" style="width:'+pct+'%"></div></div><div style="font-size:10px;color:var(--tm);text-align:center;margin-top:2px">'+(p.qualified?pct+'%':'—')+'</div></td>'+
+        '<td><span class="rpts">'+(p.qualified?p.punti:'—')+'</span></td>'+
+        '<td><div class="fbar">'+dots+'</div></td>';
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+// INIT
+function init() {
+  var p1sel = document.getElementById('bk-p1');
+  var p2sel = document.getElementById('bk-p2');
+  var fpsel = document.getElementById('filterPlayer');
+  PLAYERS.forEach(function(p) {
+    [p1sel,p2sel,fpsel].forEach(function(sel) {
+      var o = document.createElement('option');
+      o.value=p; o.textContent=p; sel.appendChild(o);
+    });
+  });
+  var fdsel = document.getElementById('filterDate');
+  SCHEDULE.forEach(function(d) {
+    var o = document.createElement('option');
+    o.value=d.date; o.textContent=d.date; fdsel.appendChild(o);
+  });
+  renderCalendar();
+  setInterval(function(){ _cache=null; renderCalendar(); }, 30000);
+}
+
+init();
+</script>
+</body>
+</html>
